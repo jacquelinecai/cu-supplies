@@ -7,18 +7,11 @@ const uri = "mongodb+srv://jacquelinecai2004:yg4g30UcP6fyH1xb@cluster.hcgs4bn.mo
 const client = new MongoClient(uri);
 
 async function main() {
-  // we'll add code here soon
+  await client.connect();
 }
 
 async function run() {
   try {
-    // const database = client.db('sample_mflix');
-    // const movies = database.collection('comments');
-    // // Query for a comment that has the name 'Taylor Scott'
-    // const query = { name: 'Taylor Scott' };
-    // const movie = await movies.findOne(query);
-    // console.log(movie);
-
     const db = client.db('cu-supplies');
     const sellers = db.collection('sellers');
 
@@ -28,19 +21,39 @@ async function run() {
       "products": ["iClicker", "camels"]
     }
 
-    const p = await sellers.insertOne(sellerDocument);
+    let mathDoc = {
+      "name": "Alex Townsend",
+      "email": "alex.townsend@cornell.edu",
+      "products": ["ice cream", "sponge", "banana"]
+    }
 
     const filter = { "name": "Michael Clarkson" };
+    const filter2 = { "name": "Alex Townsend" };
     const document = await sellers.findOne(filter);
-    console.log(document);
+    const doc2 = await sellers.findOne(filter2);
+    if (document == null) {
+      await sellers.insertOne(sellerDocument)
+    }
+    if (doc2 == null) {
+      await sellers.insertOne(mathDoc)
+    }
 
-    // app.get('/seller', (req, res) => {
-    //   res.send(sellers.find())
-    // })
+    const sellerList = await sellers.find().toArray();
+
+    app.get('/seller', (req, res) => {
+      try {
+        res.send(JSON.stringify(sellerList))
+      } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+      }
+    })
 
     app.get('/seller/clarkson', (req, res) => {
-      res.send(JSON.stringify(document))
-    })
+      res.send(JSON.stringify(document));
+    });
+
+    await main();
 
   } catch (err) {
     console.log(err.stack);
